@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 from datetime import datetime
+import os
 
 # ---------------- FETCH DATA ---------------- #
 url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -13,7 +14,19 @@ params = {
 }
 
 response = requests.get(url, params=params)
+
+if response.status_code != 200:
+    print("API Error:", response.status_code)
+    print(response.text)
+    exit()
+
 data = response.json()
+
+# 🔥 CRITICAL CHECK
+if not isinstance(data, list):
+    print("Unexpected API response:")
+    print(data)
+    exit()
 
 df = pd.DataFrame(data)
 
@@ -23,13 +36,23 @@ df = df[[
     "current_price", "market_cap", "total_volume"
 ]]
 
-# ---------------- ADD DATE & TIME ---------------- #
-current_time = datetime.now()
+# ---------------- CLEAN COLUMN NAMES ---------------- #
+df.rename(columns={
+    "current_price": "price",
+    "total_volume": "volume"
+}, inplace=True)
 
-df["fetch_time"] = current_time.strftime("%H:%M:%S")
-df["fetch_date"] = current_time.strftime("%d-%m-%Y")
+# ---------------- ADD TIMESTAMP ---------------- #
+df["fetch_datetime"] = pd.Timestamp.now()
 
-# ---------------- SAVE RAW DATA ---------------- #
-df.to_csv("crypto_raw.csv", index=False)
+# ---------------- SAVE (APPEND MODE) ---------------- #
+file_path = "crypto_raw.csv"
 
-print("Raw data saved as crypto_raw.csv")
+df.to_csv(
+    file_path,
+    mode='a',
+    header=not os.path.exists(file_path),
+    index=False
+)
+
+print("Data appended successfully")
