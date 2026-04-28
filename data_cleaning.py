@@ -1,58 +1,75 @@
 import pandas as pd
+from sqlalchemy import create_engine
 
-# ---------------- LOAD RAW DATA ---------------- #
-df = pd.read_csv("crypto_raw.csv")
+# ---------------- CONFIG ---------------- #
 
-# ---------------- DATA TYPE CHECK ---------------- #
+engine = create_engine(
+    "postgresql+psycopg2://postgres:postgres@localhost:5432/Crypto_Pulse"
+)
+
+RAW_TABLE = "crypto_dashboard_raw"
+CLEAN_TABLE = "crypto_dashboard_clean"
+
+# ---------------- LOAD DATA ---------------- #
+
+df = pd.read_sql(f"SELECT * FROM {RAW_TABLE}", engine)
+
 print("Data Types Before Cleaning:")
 print(df.dtypes)
 
 # ---------------- CLEANING ---------------- #
 
-# ✅ Remove duplicates ONLY for same coin + same timestamp
+# Datetime
+df["fetch_datetime"] = pd.to_datetime(df["fetch_datetime"], utc=True)
+
+# Remove duplicates
 df = df.drop_duplicates(subset=["id", "fetch_datetime"])
 
-# Handle missing values
+# Numeric cleaning
+df["price"] = pd.to_numeric(df["price"], errors="coerce")
+df["market_cap"] = pd.to_numeric(df["market_cap"], errors="coerce")
+df["volume"] = pd.to_numeric(df["volume"], errors="coerce")
+
+# Remove invalid
 df = df.dropna(subset=["price", "market_cap"])
+df = df[(df["price"] > 0) & (df["market_cap"] > 0)]
 
 # Standardize text
 df["symbol"] = df["symbol"].str.upper().str.strip()
 df["name"] = df["name"].str.strip()
 
-# Convert numeric fields
-df["price"] = pd.to_numeric(df["price"], errors="coerce")
-df["market_cap"] = pd.to_numeric(df["market_cap"], errors="coerce")
-df["volume"] = pd.to_numeric(df["volume"], errors="coerce")
+# ---------------- DERIVED COLUMNS ---------------- #
 
-# Fill missing numeric values with 0 and convert to integers
-df["market_cap"] = df["market_cap"].fillna(0).astype("int64")
-df["volume"] = df["volume"].fillna(0).astype("int64")
+df["fetch_date"] = df["fetch_datetime"].dt.date
+df["fetch_time"] = df["fetch_datetime"].dt.time
 
-# Convert date and time fields to datetime
-df["fetch_datetime"] = pd.to_datetime(df["fetch_datetime"], errors="coerce")
-
-# ✅ Combine into single datetime (VERY IMPORTANT for Power BI)
-df["fetch_datetime"] = pd.to_datetime(df["fetch_datetime"], errors="coerce")
-
-
-# Remove invalid values
-df = df[(df["price"] > 0) & (df["market_cap"] > 0)]
-
-# Rename columns
-df = df.rename(columns={
-    "current_price": "price",
-    "total_volume": "volume"
-})
-
-# ---------------- SORT DATA (IMPORTANT FOR TREND) ---------------- #
+# Sort
 df = df.sort_values(by=["id", "fetch_datetime"])
 
-# ---------------- SAVE CLEAN DATA ---------------- #
-# ✅ OVERWRITE CLEAN FILE (latest clean view)
-df.to_csv("crypto_clean.csv", index=False)
+# ---------------- IS_LATEST FLAG ---------------- #
 
-print("Clean data saved (overwritten) as crypto_clean.csv")
+df["is_latest"] = df.groupby("id")["fetch_datetime"].transform("max") == df["fetch_datetime"]
+df["is_latest"] = df["is_latest"].astype(int)
 
-# ---------------- DATA TYPE CHECK AFTER CLEANING ---------------- #
-print("Data Types After Cleaning:")
-print(df.dtypes)
+# ---------------- SAVE CLEAN TABLE ---------------- #
+
+df.to_sql(
+    CLEAN_TABLE,
+    engine,
+    if_exists="replace",
+    index=False
+)
+
+print("✅ Clean data saved to crypto_dashboard_clean")
+
+# ---------------- OPTIONAL BACKUP ---------------- #
+
+df.to_csv("crypto_clean_backup.csv", index=False)
+
+print("📁 Backup created")
+
+# ---------------- DEBUG ---------------- #
+
+print("\nLatest timestamp:", df["fetch_datetime"].max())
+print("\nSample:")
+print(df.head())

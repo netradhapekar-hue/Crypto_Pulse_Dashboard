@@ -1,0 +1,82 @@
+# Intern_pbi password = shreya
+
+# TO RUN AIRFLOW USE THE FOLLOWING COMMANDS:
+
+1. wsl -d Ubuntu
+2. cd ~/airflow-project
+3. source venv/bin/activate
+4. airflow standalone
+
+----------------------------------------------------------------------------------------------
+
+# TO CHECK THE PASSWORD OF THE "admin" USER, USE THE FOLLOWING COMMANDS:
+
+1. wsl -d Ubuntu
+2. cd ~/airflow
+3. cat simple_auth_manager_passwords.json.generated
+
+# Now use this password to log in to the Airflow webserver at http://localhost:8080 with the username "admin".
+
+==========================================================================================================================================================================================
+
+# AIRFLOW SETUP INSTRUCTIONS FOR WSL (Windows Subsystem for Linux):
+
+# 1. Install WSL & Open Ubuntu
+wsl --install
+wsl -l -v
+wsl -d Ubuntu
+
+# 2. Update System & Install Dependencies
+sudo apt update
+sudo apt install python3-pip python3-venv -y
+
+# 3. Create Project Directory
+cd ~
+mkdir airflow-project
+cd airflow-project
+
+# 4. Create & Activate Virtual Environment
+python3 -m venv venv
+source venv/bin/activate
+
+# 5. Install Apache Airflow (Recommended way)
+AIRFLOW_VERSION=2.9.0
+PYTHON_VERSION=3.10
+
+pip install "apache-airflow==${AIRFLOW_VERSION}" \
+--constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+
+# 6. Set Airflow Home (⚠️ Do this BEFORE init)
+export AIRFLOW_HOME=~/airflow
+
+# 7. Initialize Database
+airflow db init
+
+# Now follow the steps to run airflow standalone and check the admin password as mentioned previously.
+
+===========================================================================================================================================================================================
+
+
+# CREATING FIRST DAG (Directed Acyclic Graph) IN AIRFLOW:
+
+1. Open new terminal
+2. wsl -d Ubuntu
+3. cd ~/airflow/dags
+4. nano crypto_pulse_dag.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

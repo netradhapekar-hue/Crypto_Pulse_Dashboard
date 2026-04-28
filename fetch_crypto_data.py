@@ -1,9 +1,18 @@
 import requests
 import pandas as pd
-from datetime import datetime
-import os
+from datetime import datetime, timezone
+from sqlalchemy import create_engine
+
+# ---------------- CONFIG ---------------- #
+
+engine = create_engine(
+    "postgresql+psycopg2://postgres:postgres@localhost:5432/Crypto_Pulse"
+)
+
+TABLE_NAME = "crypto_dashboard_raw"
 
 # ---------------- FETCH DATA ---------------- #
+
 url = "https://api.coingecko.com/api/v3/coins/markets"
 
 params = {
@@ -17,42 +26,44 @@ response = requests.get(url, params=params)
 
 if response.status_code != 200:
     print("API Error:", response.status_code)
-    print(response.text)
     exit()
 
 data = response.json()
-
-# 🔥 CRITICAL CHECK
-if not isinstance(data, list):
-    print("Unexpected API response:")
-    print(data)
-    exit()
-
 df = pd.DataFrame(data)
 
-# ---------------- SELECT COLUMNS ---------------- #
+# ---------------- SELECT REQUIRED COLUMNS ---------------- #
+
 df = df[[
     "id", "symbol", "name",
     "current_price", "market_cap", "total_volume"
 ]]
 
-# ---------------- CLEAN COLUMN NAMES ---------------- #
+# ---------------- BASIC CLEANING ---------------- #
+
 df.rename(columns={
     "current_price": "price",
     "total_volume": "volume"
 }, inplace=True)
 
+df["symbol"] = df["symbol"].str.upper().str.strip()
+df["name"] = df["name"].str.strip()
+
 # ---------------- ADD TIMESTAMP ---------------- #
-df["fetch_datetime"] = pd.Timestamp.now()
 
-# ---------------- SAVE (APPEND MODE) ---------------- #
-file_path = "crypto_raw.csv"
+current_time = datetime.now(timezone.utc)
 
-df.to_csv(
-    file_path,
-    mode='a',
-    header=not os.path.exists(file_path),
-    index=False
+df["fetch_datetime"] = current_time
+
+print("Fetch Time:", current_time)
+
+# ---------------- INSERT INTO RAW TABLE ---------------- #
+
+df.to_sql(
+    TABLE_NAME,
+    engine,
+    if_exists="append",
+    index=False,
+    method="multi"
 )
 
-print("Data appended successfully")
+print("✅ Raw data inserted")

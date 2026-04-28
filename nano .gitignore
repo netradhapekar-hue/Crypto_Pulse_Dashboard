@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+*/venv/
+airflow-project/venv/
+
+# Airflow
+airflow-project/logs/
+airflow-project/*.db
+
+# VS Code
+.vscode/
+
+# Data files (optional)
+*.csv
+
+# Power BI
+*.pbix
