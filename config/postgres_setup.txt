@@ -1,0 +1,13 @@
+# username = postgres
+# password = postgres
+
+# Setting Up postgresql:
+
+sudo service postgresql status
+# If the gives the output as "Unit postgresql.service could not be found.", Then follow the below steps.
+
+1. sudo apt update
+2. sudo apt install postgresql postgresql-contrib -y\
+3. sudo service postgresql start
+
+

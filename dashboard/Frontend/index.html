@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- 🔥 Sidebar -->
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li>Overview</li>
+            <li>Assets</li>
+            <li>Trends</li>
+        </ul>
+    </div>
+
+    <!-- 🔥 Main Content -->
+    <div class="main">
+
+        <!-- 🔥 Sticky Navbar -->
+        <div class="navbar">
+            <h1>Crypto_Pulse</h1>
+        </div>
+
+        <!-- 🔥 Top Crypto Cards -->
+        <div class="top-assets" id="topAssets"></div>
+
+        <!-- 🔥 KPI Cards -->
+<div class="kpi-cards">
+    
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span>Avg Price</span>
+            <span class="kpi-icon">📊</span>
+        </div>
+        <div class="kpi-value" id="avgPrice">--</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span>Max Price</span>
+            <span class="kpi-icon">🚀</span>
+        </div>
+        <div class="kpi-value" id="maxPrice">--</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span>Min Price</span>
+            <span class="kpi-icon">📉</span>
+        </div>
+        <div class="kpi-value" id="minPrice">--</div>
+    </div>
+
+</div>
+
+
+<div class="insights">
+
+    <!-- 🔥 Trending -->
+    <div class="insight-card">
+        <div class="insight-header">
+            🔥 Trending
+            <span>View more →</span>
+        </div>
+        <div id="trendingList"></div>
+    </div>
+
+    <!-- 🚀 Top Gainers -->
+    <div class="insight-card">
+        <div class="insight-header">
+            🚀 Top Gainers
+            <span>View more →</span>
+        </div>
+        <div id="gainersList"></div>
+    </div>
+
+</div>
+
+        <!-- 🔥 Chart -->
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <!-- 🔥 Table -->
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Coin</th>
+                        <th>Price</th>
+                        <th>1H %</th>
+                        <th>24H %</th>
+                        <th>7D %</th>
+                        <th>Volume</th>
+                        <th>Market Cap</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>        
+                <tbody></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

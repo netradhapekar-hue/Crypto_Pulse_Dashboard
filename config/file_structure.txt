@@ -1,0 +1,45 @@
+This project is a live project that gets the data from :
+The COINGECKO API (Top 50 coins)
+
+
+1A. fetch_crypto_data.py:
+- Base/template data fetching logic (for reference) 
+
+1B. copy_fetch_crypto_data.py :
+- Actual data fetching script 
+- used in the Airflow pipeline
+
+
+
+2A. data_cleaning.py :
+- Base/template cleaning logic (for reference)
+
+2B. copy_data_cleaning.py :
+- Actual cleaning script
+- used in the Airflow pipeline
+
+
+
+3. historical_loader.py :
+- Fetches top 10 crypto coins
+- gets their historical data
+- and appends it to a CSV file.
+
+
+
+4. setup.sql :
+- Initial setup file that creates the table and analytics view
+- run once
+- not in pipeline.
+
+
+5. sql_analysis_1.sql :
+- Runs validation checks and analysis queries on crypto data
+- creates a dashboard view for reporting.
+
+
+6. analysis.sql :
+- Only analysis queries (no view creation)
+
+
+
