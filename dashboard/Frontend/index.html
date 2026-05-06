@@ -1,115 +1,298 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Crypto Dashboard</title>
+
+    <meta charset="UTF-8">
+
+    <meta 
+        name="viewport" 
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Crypto Pulse Dashboard</title>
+
+    <!-- 🔥 Google Font -->
+    <link 
+        rel="preconnect" 
+        href="https://fonts.googleapis.com"
+    >
+
+    <link 
+        rel="preconnect" 
+        href="https://fonts.gstatic.com" 
+        crossorigin
+    >
+
+    <link 
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+        rel="stylesheet"
+    >
+
+    <!-- 🔥 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 🔥 CSS -->
     <link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
 
-<div class="layout">
+    <div class="layout">
 
-    <!-- 🔥 Sidebar -->
-    <div class="sidebar">
-        <h2>Dashboard</h2>
-        <ul>
-            <li>Overview</li>
-            <li>Assets</li>
-            <li>Trends</li>
-        </ul>
+        <!-- ======================================================
+        🔥 SIDEBAR
+        ====================================================== -->
+
+        <aside class="sidebar">
+
+            <h2>Dashboard</h2>
+
+            <ul>
+
+                <li>📊 Overview</li>
+
+                <li>🪙 Assets</li>
+
+                <li>📈 Trends</li>
+
+            </ul>
+
+        </aside>
+
+        <!-- ======================================================
+        🔥 MAIN
+        ====================================================== -->
+
+        <main class="main">
+
+            <!-- ======================================================
+            🔥 NAVBAR
+            ====================================================== -->
+
+            <div class="navbar">
+
+                <div class="navbar-left">
+
+                    <div class="logo-container">
+
+                        <img 
+                            src="../assets/logo.png"
+                            alt="Crypto Pulse Logo"
+                            class="logo-img"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ======================================================
+            🔥 TOP ASSETS
+            ====================================================== -->
+
+            <section 
+                class="top-assets" 
+                id="topAssets"
+            ></section>
+
+            <!-- ======================================================
+            🔥 KPI CARDS
+            ====================================================== -->
+
+            <section class="kpi-cards">
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span>Average Price</span>
+
+                        <span class="kpi-icon">📊</span>
+
+                    </div>
+
+                    <div 
+                        class="kpi-value" 
+                        id="avgPrice"
+                    >
+                        --
+                    </div>
+
+                </div>
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span>Maximum Price</span>
+
+                        <span class="kpi-icon">🚀</span>
+
+                    </div>
+
+                    <div 
+                        class="kpi-value" 
+                        id="maxPrice"
+                    >
+                        --
+                    </div>
+
+                </div>
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span>Minimum Price</span>
+
+                        <span class="kpi-icon">📉</span>
+
+                    </div>
+
+                    <div 
+                        class="kpi-value" 
+                        id="minPrice"
+                    >
+                        --
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ======================================================
+            🔥 TRENDING + GAINERS
+            ====================================================== -->
+
+            <section class="insights">
+
+                <!-- 🔥 Trending -->
+
+                <div class="insight-card">
+
+                    <div class="insight-header">
+
+                        <span>
+                            🔥 Trending
+                        </span>
+
+                        <span class="view-more">
+                            View more →
+                        </span>
+
+                    </div>
+
+                    <div id="trendingList"></div>
+
+                </div>
+
+                <!-- 🚀 Top Gainers -->
+
+                <div class="insight-card">
+
+                    <div class="insight-header">
+
+                        <span>
+                            🚀 Top Gainers
+                        </span>
+
+                        <span class="view-more">
+                            View more →
+                        </span>
+
+                    </div>
+
+                    <div id="gainersList"></div>
+
+                </div>
+
+            </section>
+
+            <!-- ======================================================
+            🔥 MAIN CHART
+            ====================================================== -->
+
+            <section class="chart-container">
+
+                <div class="chart-header">
+
+                    <div>
+
+                        <h2>Bitcoin Price Trend</h2>
+
+                        <p>Historical market movement</p>
+
+                    </div>
+
+                </div>
+
+                <div class="main-chart-wrapper">
+
+                    <canvas id="priceChart"></canvas>
+
+                </div>
+
+            </section>
+
+            <!-- ======================================================
+            🔥 TABLE
+            ====================================================== -->
+
+            <section class="table-container">
+
+                <div class="table-header">
+
+                    <h2>Crypto Market</h2>
+
+                </div>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Coin</th>
+
+                            <th>Price</th>
+
+                            <th>1H</th>
+
+                            <th>24H</th>
+
+                            <th>7D</th>
+
+                            <th>Volume</th>
+
+                            <th>Market Cap</th>
+
+                            <th>Last 7 Days</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="dataTable"></tbody>
+
+                </table>
+
+            </section>
+
+        </main>
+
     </div>
 
-    <!-- 🔥 Main Content -->
-    <div class="main">
+    <!-- ======================================================
+    🔥 JS
+    ====================================================== -->
 
-        <!-- 🔥 Sticky Navbar -->
-        <div class="navbar">
-            <h1>Crypto_Pulse</h1>
-        </div>
+    <script src="app.js"></script>
 
-        <!-- 🔥 Top Crypto Cards -->
-        <div class="top-assets" id="topAssets"></div>
-
-        <!-- 🔥 KPI Cards -->
-<div class="kpi-cards">
-    
-    <div class="kpi-card">
-        <div class="kpi-header">
-            <span>Avg Price</span>
-            <span class="kpi-icon">📊</span>
-        </div>
-        <div class="kpi-value" id="avgPrice">--</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-header">
-            <span>Max Price</span>
-            <span class="kpi-icon">🚀</span>
-        </div>
-        <div class="kpi-value" id="maxPrice">--</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-header">
-            <span>Min Price</span>
-            <span class="kpi-icon">📉</span>
-        </div>
-        <div class="kpi-value" id="minPrice">--</div>
-    </div>
-
-</div>
-
-
-<div class="insights">
-
-    <!-- 🔥 Trending -->
-    <div class="insight-card">
-        <div class="insight-header">
-            🔥 Trending
-            <span>View more →</span>
-        </div>
-        <div id="trendingList"></div>
-    </div>
-
-    <!-- 🚀 Top Gainers -->
-    <div class="insight-card">
-        <div class="insight-header">
-            🚀 Top Gainers
-            <span>View more →</span>
-        </div>
-        <div id="gainersList"></div>
-    </div>
-
-</div>
-
-        <!-- 🔥 Chart -->
-        <div class="chart-container">
-            <canvas id="priceChart"></canvas>
-        </div>
-
-        <!-- 🔥 Table -->
-        <div class="table-container">
-            <table id="dataTable">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Coin</th>
-                        <th>Price</th>
-                        <th>1H %</th>
-                        <th>24H %</th>
-                        <th>7D %</th>
-                        <th>Volume</th>
-                        <th>Market Cap</th>
-                        <th>Trend</th>
-                    </tr>
-                </thead>        
-                <tbody></tbody>
-            </table>
-        </div>
-
-    </div>
-</div>
-
-<script src="app.js"></script>
 </body>
+
 </html>

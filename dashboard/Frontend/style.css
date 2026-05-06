@@ -1,66 +1,129 @@
-/* 🔥 Base */
+/* ======================================================
+🔥 BASE
+====================================================== */
+
 body {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #0f1125, #05060f);
-    color: #fff;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: #0d1421;
+    color: white;
+    overflow-x: hidden;
 }
 
-/* 🔥 Layout */
+
+
+* {
+    box-sizing: border-box;
+}
+
+/* ======================================================
+🔥 LAYOUT
+====================================================== */
+
 .layout {
     display: flex;
+    min-height: 100vh;
 }
 
-/* 🔥 Sidebar */
+/* ======================================================
+🔥 SIDEBAR
+====================================================== */
+
 .sidebar {
     width: 220px;
     height: 100vh;
-    background: rgba(20, 20, 40, 0.6);
-    backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(255,255,255,0.05);
+    background: #111827;
+    border-right: 1px solid rgba(255,255,255,0.06);
     padding: 20px;
     position: fixed;
+    top: 0;
+    left: 0;
 }
 
 .sidebar h2 {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
 }
 
 .sidebar li {
-    margin: 12px 0;
-    opacity: 0.7;
+    margin: 14px 0;
     cursor: pointer;
+    opacity: 0.7;
+    transition: 0.2s;
+    font-size: 14px;
 }
 
 .sidebar li:hover {
     opacity: 1;
+    color: #16c784;
 }
 
-/* 🔥 Main */
+/* ======================================================
+🔥 MAIN
+====================================================== */
+
 .main {
+
     margin-left: 220px;
-    width: calc(100% - 220px);
-    padding: 20px 40px;
+
+    padding: 20px 30px;
+
+    width: calc(100vw - 220px);
+
+    box-sizing: border-box;
+
+    overflow-x: hidden;
 }
 
-/* 🔥 Navbar */
+
+/* ======================================================
+🔥 NAVBAR
+====================================================== */
+
 .navbar {
-    position: sticky;
-    top: 0;
-    background: rgba(20,20,40,0.7);
-    backdrop-filter: blur(10px);
-    padding: 15px 20px;
+    position: relative;
+    background: #111827;
+    height: 100px;
     border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 20px rgba(123,97,255,0.1);
+    margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.05);
+    overflow: visible;
 }
 
-.navbar h1 {
-    margin: 0;
-    font-size: 22px;
+.logo-container {
+    position: absolute;
+    top: 50%;
+    left: -60px;
+    transform: translateY(-50%);
 }
 
-/* 🔥 Top Cards */
+.logo-img {
+    height: 250px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ======================================================
+🔥 TOP ASSETS
+====================================================== */
+
+.top-card-header {
+    margin-bottom: 10px;
+}
+
+.top-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .top-assets {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -69,31 +132,52 @@ body {
 }
 
 .asset-card {
-    background: linear-gradient(145deg, #1b1d3a, #0d0e22);
-    border-radius: 16px;
+    background: linear-gradient(145deg, #1b1d3a, #101221);
+    border-radius: 18px;
     padding: 18px;
+    border: 1px solid rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
     transition: 0.3s;
+    min-height: 180px;
 }
 
 .asset-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 0 20px rgba(123,97,255,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 0 20px rgba(123,97,255,0.12);
 }
 
 .asset-title {
+    color: #9ca3af;
     font-size: 13px;
-    color: #aaa;
 }
 
 .asset-price {
-    font-size: 22px;
-    font-weight: bold;
-    margin: 10px 0;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 10px;
 }
 
-/* 🔥 KPI Cards */
+/* ======================================================
+🔥 MINI CHART
+====================================================== */
+
+.mini-chart-wrapper {
+    width: 100%;
+    height: 80px;
+    margin-top: 14px;
+    position: relative;
+}
+
+.mini-chart-wrapper canvas {
+    width: 100% !important;
+    height: 80px !important;
+}
+
+/* ======================================================
+🔥 KPI CARDS
+====================================================== */
+
 .kpi-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -102,21 +186,15 @@ body {
 }
 
 .kpi-card {
-    background: linear-gradient(145deg, #1a1c3a, #0e1025);
+    background: linear-gradient(145deg, #1b1d3a, #101221);
+    border-radius: 18px;
     padding: 20px;
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: 0.3s;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-.kpi-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 20px rgba(123,97,255,0.3);
-}
-
-
-/* 🔥 Insights */
+/* ======================================================
+🔥 INSIGHTS
+====================================================== */
 
 .insights {
     display: grid;
@@ -126,106 +204,225 @@ body {
 }
 
 .insight-card {
-    background: linear-gradient(145deg, #1a1c3a, #0e1025);
-    border-radius: 16px;
+    background: linear-gradient(145deg, #1b1d3a, #101221);
+    border-radius: 18px;
     padding: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 .insight-header {
     display: flex;
     justify-content: space-between;
-    font-size: 16px;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .insight-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
+    padding: 14px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .insight-left {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.insight-left img {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    gap: 12px;
 }
 
 .insight-name {
     font-size: 14px;
+    font-weight: 500;
 }
 
 .insight-right {
-    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-.green {
-    color: #00ff9f;
-}
+/* ======================================================
+🔥 TABLE
+====================================================== */
 
-.red {
-    color: #ff4d6d;
-}
-
-/* 🔥 Chart */
-.chart-container {
-    background: rgba(20,20,40,0.6);
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 30px;
-}
-
-/* 🔥 Table */
 .table-container {
-    background: rgba(20,20,40,0.6);
+    background: #111827;
+    border-radius: 18px;
     padding: 20px;
-    border-radius: 16px;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
+    min-width: 1200px;
 }
 
 th {
-    color: #aaa;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    padding: 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+td {
+    padding: 18px 12px;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-size: 14px;
 }
 
 tr {
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: 0.2s;
 }
 
-/* 🔥 Glow accent */
-.asset-card::before {
-    content: "";
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    background: rgba(123,97,255,0.2);
-    filter: blur(60px);
-    top: -50px;
-    right: -50px;
+tr:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+/* ======================================================
+🔥 COIN CELL
+====================================================== */
+
+.coin-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.coin-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.coin-info {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.coin-name {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.coin-symbol {
+    font-size: 13px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.rank {
+    color: #9ca3af;
+    width: 40px;
+}
+
+.price {
+    font-weight: 600;
+}
+
+/* ======================================================
+🔥 SPARKLINE
+====================================================== */
+
+.spark-wrapper {
+    width: 140px;
+    height: 50px;
 }
 
 .sparkline {
-    width: 120px;      /* 🔥 LIMIT WIDTH */
-    height: 40px;      /* already fixed */
-    display: block;
+    width: 140px !important;
+    height: 50px !important;
 }
 
-.spark-wrapper {
-    width: 120px;
-    height: 40px;
+/* ======================================================
+🔥 COLORS
+====================================================== */
+
+.green {
+    color: #16c784;
+    font-weight: 600;
+}
+
+.red {
+    color: #ea3943;
+    font-weight: 600;
+}
+
+/* ======================================================
+🔥 CHART CONTAINER
+====================================================== */
+
+.chart-container {
+    background: #111827;
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ======================================================
+🔥 SCROLLBAR
+====================================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111827;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* ======================================================
+🔥 RESPONSIVE
+====================================================== */
+
+@media (max-width: 1200px) {
+
+    .top-assets {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .kpi-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .insights {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+
+    .top-assets {
+        grid-template-columns: 1fr;
+    }
 }

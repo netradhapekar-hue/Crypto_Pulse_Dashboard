@@ -1,0 +1,4 @@
+{"timestamp":"2026-05-06T06:15:08.264579Z","level":"info","event":"DAG bundles loaded: dags-folder","logger":"airflow.dag_processing.bundles.manager.DagBundlesManager","filename":"manager.py","lineno":209}
+{"timestamp":"2026-05-06T06:15:08.265561Z","level":"info","event":"Filling up the DagBag from /home/intern_pbi/Crypto_Pulse/dags/crypto_pulse_dag.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
+{"timestamp":"2026-05-06T06:15:09.079392Z","level":"info","event":"✅ Clean data saved","logger":"task.stdout"}
+{"timestamp":"2026-05-06T06:15:09.079381Z","level":"info","event":"Done. Returned value was: None","logger":"airflow.task.operators.airflow.providers.standard.operators.python.PythonOperator","filename":"python.py","lineno":229}

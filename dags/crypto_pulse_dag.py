@@ -14,7 +14,7 @@ from scripts.run_analysis import run_analysis
 with DAG(
     dag_id="crypto_etl_pipeline",
     start_date=datetime(2024, 1, 1),
-    schedule="*/30 * * * *",
+    schedule="*/15 * * * *",
     catchup=False
 ) as dag:
 
