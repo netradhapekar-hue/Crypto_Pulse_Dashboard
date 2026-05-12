@@ -1,425 +1,449 @@
 from flask import Flask, jsonify, request
 import psycopg2
+from psycopg2 import Error
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
 # =========================================================
-# 🔥 DB CONNECTION
+# DB CONNECTION
 # =========================================================
 
 def get_connection():
+    try:
+        return psycopg2.connect(
+            dbname="crypto_pulse",
+            user="postgres",
+            password="postgres",
+            host="localhost",
+            port="5432"
+        )
+    except Error as e:
+        print(f"❌ Database connection failed: {e}")
+        raise
 
-    return psycopg2.connect(
-        dbname="crypto_pulse",
-        user="postgres",
-        password="postgres",
-        host="localhost",
-        port="5432"
-    )
+
+def error_response(message, error, status_code=500):
+    print(f"❌ {message}: {error}")
+    return jsonify({
+        "error": message,
+        "details": str(error)
+    }), status_code
+
 
 # =========================================================
-# 🔥 HOME ROUTE
+# HOME ROUTE
 # =========================================================
 
 @app.route('/')
 def home():
-
     return "Crypto Dashboard API Running 🚀"
 
+
 # =========================================================
-# 🔥 KPI SUMMARY
+# KPI SUMMARY
 # =========================================================
 
 @app.route('/summary')
 def summary():
+    conn = None
+    cur = None
 
-    conn = get_connection()
-    cur = conn.cursor()
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
-    cur.execute("""
-        SELECT 
-            AVG(price),
-            MAX(price),
-            MIN(price),
-            COUNT(*)
-        FROM crypto_dashboard_clean
-        WHERE price > 0
-    """)
+        cur.execute("""
+            SELECT 
+                AVG(price),
+                MAX(price),
+                MIN(price),
+                COUNT(*)
+            FROM crypto_dashboard_clean
+            WHERE price > 0
+        """)
 
-    avg_price, max_price, min_price, total = cur.fetchone()
+        avg_price, max_price, min_price, total = cur.fetchone()
 
-    cur.close()
-    conn.close()
+        return jsonify({
+            "avg_price": float(avg_price or 0),
+            "max_price": float(max_price or 0),
+            "min_price": float(min_price or 0),
+            "total_records": total
+        })
 
-    return jsonify({
+    except Exception as e:
+        return error_response("Failed to fetch summary data", e)
 
-        "avg_price": float(avg_price or 0),
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-        "max_price": float(max_price or 0),
-
-        "min_price": float(min_price or 0),
-
-        "total_records": total
-    })
 
 # =========================================================
-# 🔥 TRENDING
+# TRENDING
 # =========================================================
 
 @app.route('/trending')
 def trending():
+    conn = None
+    cur = None
 
-    conn = get_connection()
-    cur = conn.cursor()
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
-    cur.execute("""
-        SELECT 
-            symbol,
-            name,
-            image,
-            (MAX(price) - MIN(price)) / NULLIF(MIN(price),0) * 100 AS change
-        FROM crypto_dashboard_clean
-        WHERE fetch_datetime >= NOW() - INTERVAL '1 day'
-        GROUP BY symbol, name, image
-        ORDER BY change DESC
-        LIMIT 5
-    """)
+        cur.execute("""
+            SELECT 
+                symbol,
+                name,
+                image,
+                (MAX(price) - MIN(price)) / NULLIF(MIN(price),0) * 100 AS change
+            FROM crypto_dashboard_clean
+            WHERE fetch_datetime >= NOW() - INTERVAL '1 day'
+            GROUP BY symbol, name, image
+            ORDER BY change DESC
+            LIMIT 5
+        """)
 
-    rows = cur.fetchall()
+        rows = cur.fetchall()
 
-    result = []
+        result = []
 
-    for r in rows:
+        for r in rows:
+            result.append({
+                "symbol": r[0],
+                "name": r[1],
+                "image": r[2],
+                "change": float(r[3]) if r[3] else 0
+            })
 
-        result.append({
+        return jsonify(result)
 
-            "symbol": r[0],
+    except Exception as e:
+        return error_response("Failed to fetch trending data", e)
 
-            "name": r[1],
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-            "image": r[2],
-
-            "change": float(r[3]) if r[3] else 0
-        })
-
-    cur.close()
-    conn.close()
-
-    return jsonify(result)
 
 # =========================================================
-# 🔥 TOP ASSETS
+# TOP ASSETS
 # =========================================================
 
 @app.route('/top-assets')
 def top_assets():
+    conn = None
+    cur = None
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            symbol,
-            image
-        FROM crypto_dashboard_clean
-        GROUP BY symbol, image
-        ORDER BY AVG(price) DESC
-        LIMIT 5
-    """)
-
-    coins = cur.fetchall()
-
-    result = []
-
-    for coin in coins:
-
-        symbol = coin[0]
-        image = coin[1]
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
         cur.execute("""
-            SELECT fetch_datetime, price
+            SELECT 
+                symbol,
+                image
             FROM crypto_dashboard_clean
-            WHERE symbol = %s
-            ORDER BY fetch_datetime DESC
-            LIMIT 20
-        """, (symbol,))
+            GROUP BY symbol, image
+            ORDER BY AVG(price) DESC
+            LIMIT 5
+        """)
 
-        rows = cur.fetchall()[::-1]
+        coins = cur.fetchall()
 
-        prices = [float(r[1]) for r in rows]
+        result = []
 
-        result.append({
+        for coin in coins:
+            symbol = coin[0]
+            image = coin[1]
 
-            "coin": symbol,
+            cur.execute("""
+                SELECT fetch_datetime, price
+                FROM crypto_dashboard_clean
+                WHERE symbol = %s
+                ORDER BY fetch_datetime DESC
+                LIMIT 20
+            """, (symbol,))
 
-            "image": image,
+            rows = cur.fetchall()[::-1]
 
-            "latest_price": prices[-1] if prices else 0,
+            prices = [float(r[1]) for r in rows]
 
-            "trend": prices
-        })
+            result.append({
+                "coin": symbol,
+                "image": image,
+                "latest_price": prices[-1] if prices else 0,
+                "trend": prices
+            })
 
-    cur.close()
-    conn.close()
+        return jsonify(result)
 
-    return jsonify(result)
+    except Exception as e:
+        return error_response("Failed to fetch top assets", e)
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 # =========================================================
-# 🔥 TABLE DATA
+# TABLE DATA
 # =========================================================
 
 @app.route('/table')
 def table():
+    conn = None
+    cur = None
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            symbol,
-            image,
-            MAX(price) AS latest_price,
-            MIN(price) AS min_price,
-            AVG(volume) AS volume,
-            AVG(market_cap) AS market_cap
-        FROM crypto_dashboard_clean
-        WHERE fetch_datetime >= NOW() - INTERVAL '7 days'
-        GROUP BY symbol, image
-        ORDER BY latest_price DESC
-        LIMIT 10
-    """)
-
-    rows = cur.fetchall()
-
-    result = []
-
-    for r in rows:
-
-        symbol = r[0]
-
-        image = r[1]
-
-        latest_price = float(r[2] or 0)
-
-        min_price = float(r[3] or 0)
-
-        volume = float(r[4] or 0)
-
-        market_cap = float(r[5] or 0)
-
-        # =====================================================
-        # 🔥 CHANGE %
-        # =====================================================
-
-        change = latest_price - min_price
-
-        change_percent = (
-            (change / min_price) * 100
-            if min_price != 0
-            else 0
-        )
-
-        # =====================================================
-        # 🔥 TREND DATA
-        # =====================================================
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
         cur.execute("""
-            SELECT price
+            SELECT 
+                symbol,
+                image,
+                MAX(price) AS latest_price,
+                MIN(price) AS min_price,
+                AVG(volume) AS volume,
+                AVG(market_cap) AS market_cap
             FROM crypto_dashboard_clean
-            WHERE symbol = %s
-            ORDER BY fetch_datetime DESC
-            LIMIT 20
-        """, (symbol,))
+            WHERE fetch_datetime >= NOW() - INTERVAL '7 days'
+            GROUP BY symbol, image
+            ORDER BY latest_price DESC
+            LIMIT 10
+        """)
 
-        trend_rows = cur.fetchall()[::-1]
+        rows = cur.fetchall()
 
-        trend = [float(x[0]) for x in trend_rows]
+        result = []
 
-        result.append({
+        for r in rows:
+            symbol = r[0]
+            image = r[1]
+            latest_price = float(r[2] or 0)
+            min_price = float(r[3] or 0)
+            volume = float(r[4] or 0)
+            market_cap = float(r[5] or 0)
 
-            "coin": symbol,
+            change = latest_price - min_price
 
-            "image": image,
+            change_percent = (
+                (change / min_price) * 100
+                if min_price != 0
+                else 0
+            )
 
-            "price": latest_price,
+            cur.execute("""
+                SELECT price
+                FROM crypto_dashboard_clean
+                WHERE symbol = %s
+                ORDER BY fetch_datetime DESC
+                LIMIT 20
+            """, (symbol,))
 
-            "change_1h": change_percent / 7,
+            trend_rows = cur.fetchall()[::-1]
 
-            "change_24h": change_percent / 3,
+            trend = [float(x[0]) for x in trend_rows]
 
-            "change_7d": change_percent,
+            result.append({
+                "coin": symbol,
+                "image": image,
+                "price": latest_price,
+                "change_1h": change_percent / 7,
+                "change_24h": change_percent / 3,
+                "change_7d": change_percent,
+                "volume": volume,
+                "market_cap": market_cap,
+                "trend": trend
+            })
 
-            "volume": volume,
+        return jsonify(result)
 
-            "market_cap": market_cap,
+    except Exception as e:
+        return error_response("Failed to fetch table data", e)
 
-            "trend": trend
-        })
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-    cur.close()
-    conn.close()
-
-    return jsonify(result)
 
 # =========================================================
-# 🔥 FILTER DATA
+# FILTER DATA
 # =========================================================
 
 @app.route('/filter')
 def filter_data():
+    conn = None
+    cur = None
 
-    coin = request.args.get('coin')
+    try:
+        coin = request.args.get('coin')
+        start = request.args.get('start')
+        end = request.args.get('end')
 
-    start = request.args.get('start')
+        conn = get_connection()
+        cur = conn.cursor()
 
-    end = request.args.get('end')
+        query = """
+            SELECT 
+                symbol,
+                image,
+                price,
+                fetch_datetime
+            FROM crypto_dashboard_clean
+            WHERE 1=1
+        """
 
-    conn = get_connection()
+        params = []
 
-    cur = conn.cursor()
+        if coin:
+            query += " AND symbol = %s"
+            params.append(coin.upper())
 
-    query = """
-        SELECT 
-            symbol,
-            image,
-            price,
-            fetch_datetime
-        FROM crypto_dashboard_clean
-        WHERE 1=1
-    """
+        if start and end:
+            query += " AND fetch_datetime BETWEEN %s AND %s"
+            params.extend([start, end])
 
-    params = []
+        query += """
+            ORDER BY fetch_datetime DESC
+            LIMIT 100
+        """
 
-    if coin:
+        cur.execute(query, tuple(params))
 
-        query += " AND symbol = %s"
+        rows = cur.fetchall()
 
-        params.append(coin)
+        result = []
 
-    if start and end:
+        for r in rows:
+            result.append({
+                "coin": r[0],
+                "image": r[1],
+                "price": float(r[2]),
+                "date": str(r[3])
+            })
 
-        query += " AND fetch_datetime BETWEEN %s AND %s"
+        return jsonify(result)
 
-        params.extend([start, end])
+    except Exception as e:
+        return error_response("Failed to fetch filtered data", e)
 
-    query += """
-        ORDER BY fetch_datetime DESC
-        LIMIT 100
-    """
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-    cur.execute(query, tuple(params))
-
-    rows = cur.fetchall()
-
-    result = []
-
-    for r in rows:
-
-        result.append({
-
-            "coin": r[0],
-
-            "image": r[1],
-
-            "price": float(r[2]),
-
-            "date": str(r[3])
-        })
-
-    cur.close()
-    conn.close()
-
-    return jsonify(result)
 
 # =========================================================
-# 🔥 TOP GAINERS
+# TOP GAINERS
 # =========================================================
 
 @app.route('/top-gainers')
 def top_gainers():
+    conn = None
+    cur = None
 
-    conn = get_connection()
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
-    cur = conn.cursor()
+        cur.execute("""
+            SELECT 
+                symbol,
+                image,
+                MAX(price) - MIN(price) AS change
+            FROM crypto_dashboard_clean
+            GROUP BY symbol, image
+            ORDER BY change DESC
+            LIMIT 5
+        """)
 
-    cur.execute("""
-        SELECT 
-            symbol,
-            image,
-            MAX(price) - MIN(price) AS change
-        FROM crypto_dashboard_clean
-        GROUP BY symbol, image
-        ORDER BY change DESC
-        LIMIT 5
-    """)
+        rows = cur.fetchall()
 
-    rows = cur.fetchall()
+        result = []
 
-    result = []
+        for r in rows:
+            result.append({
+                "coin": r[0],
+                "image": r[1],
+                "change": float(r[2] or 0)
+            })
 
-    for r in rows:
+        return jsonify(result)
 
-        result.append({
+    except Exception as e:
+        return error_response("Failed to fetch top gainers", e)
 
-            "coin": r[0],
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-            "image": r[1],
-
-            "change": float(r[2] or 0)
-        })
-
-    cur.close()
-    conn.close()
-
-    return jsonify(result)
 
 # =========================================================
-# 🔥 MAIN CHART TREND
+# MAIN CHART TREND
 # =========================================================
 
 @app.route('/trend/<coin>')
 def trend_chart(coin):
+    conn = None
+    cur = None
 
-    conn = get_connection()
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
-    cur = conn.cursor()
+        cur.execute("""
+            SELECT 
+                fetch_datetime,
+                price
+            FROM crypto_dashboard_clean
+            WHERE symbol = %s
+            ORDER BY fetch_datetime ASC
+            LIMIT 100
+        """, (coin.upper(),))
 
-    cur.execute("""
-        SELECT 
-            fetch_datetime,
-            price
-        FROM crypto_dashboard_clean
-        WHERE symbol = %s
-        ORDER BY fetch_datetime ASC
-        LIMIT 100
-    """, (coin.upper(),))
+        rows = cur.fetchall()
 
-    rows = cur.fetchall()
+        result = []
 
-    result = []
+        for r in rows:
+            result.append({
+                "date": str(r[0]),
+                "price": float(r[1])
+            })
 
-    for r in rows:
+        return jsonify(result)
 
-        result.append({
+    except Exception as e:
+        return error_response("Failed to fetch trend chart data", e)
 
-            "date": str(r[0]),
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-            "price": float(r[1])
-        })
-
-    cur.close()
-    conn.close()
-
-    return jsonify(result)
 
 # =========================================================
-# 🔥 RUN SERVER
+# RUN SERVER
 # =========================================================
 
 if __name__ == "__main__":
-
     app.run(
         host='0.0.0.0',
         port=5000,

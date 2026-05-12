@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 # ---------------- CONFIG ---------------- #
 
 engine = create_engine(
-    "postgresql+psycopg2://postgres:postgres@localhost:5432/Crypto_Pulse"
+    "postgresql+psycopg2://postgres:postgres@localhost:5432/crypto_pulse"
 )
 
 RAW_TABLE = "crypto_dashboard_raw"

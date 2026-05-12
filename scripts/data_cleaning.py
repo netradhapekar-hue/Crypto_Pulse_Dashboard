@@ -1,10 +1,11 @@
 def clean_crypto_data():
     import pandas as pd
     from sqlalchemy import create_engine
+    from dotenv import load_dotenv
+    import os
 
-    engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/crypto_pulse"
-    )
+    load_dotenv()
+    engine = create_engine(os.getenv("DATABASE_URL"))
 
     RAW_TABLE = "crypto_dashboard_raw"
     CLEAN_TABLE = "crypto_dashboard_clean"
