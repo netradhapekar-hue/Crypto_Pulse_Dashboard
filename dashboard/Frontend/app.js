@@ -1,4 +1,4 @@
-const API = "http://localhost:5000";
+const API = "https://crypto-pulse-api-dx3x.onrender.com";
 
 let mainChart = null;
 
