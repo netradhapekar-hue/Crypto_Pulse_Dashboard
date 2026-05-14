@@ -162,7 +162,7 @@ def top_assets():
             FROM crypto_dashboard_clean
             GROUP BY symbol, image
             ORDER BY AVG(price) DESC
-            LIMIT 5
+            LIMIT 50
         """)
 
         coins = cur.fetchall()
@@ -218,18 +218,16 @@ def table():
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT 
+            SELECT DISTINCT ON (symbol)
                 symbol,
                 image,
-                MAX(price) AS latest_price,
-                MIN(price) AS min_price,
-                AVG(volume) AS volume,
-                AVG(market_cap) AS market_cap
+                price AS latest_price,
+                volume,
+                market_cap,
+                fetch_datetime
             FROM crypto_dashboard_clean
             WHERE fetch_datetime >= NOW() - INTERVAL '7 days'
-            GROUP BY symbol, image
-            ORDER BY latest_price DESC
-            LIMIT 10
+            ORDER BY symbol, fetch_datetime DESC
         """)
 
         rows = cur.fetchall()
@@ -240,9 +238,17 @@ def table():
             symbol = r[0]
             image = r[1]
             latest_price = float(r[2] or 0)
-            min_price = float(r[3] or 0)
-            volume = float(r[4] or 0)
-            market_cap = float(r[5] or 0)
+            volume = float(r[3] or 0)
+            market_cap = float(r[4] or 0)
+
+            cur.execute("""
+                SELECT MIN(price)
+                FROM crypto_dashboard_clean
+                WHERE symbol = %s
+            """, (symbol,))
+
+            min_price_row = cur.fetchone()
+            min_price = float(min_price_row[0] or 0)
 
             change = latest_price - min_price
 
@@ -253,7 +259,7 @@ def table():
             )
 
             cur.execute("""
-                SELECT price
+                SELECT price, fetch_datetime
                 FROM crypto_dashboard_clean
                 WHERE symbol = %s
                 ORDER BY fetch_datetime DESC
@@ -262,7 +268,13 @@ def table():
 
             trend_rows = cur.fetchall()[::-1]
 
-            trend = [float(x[0]) for x in trend_rows]
+            trend = [
+                {
+                    "price": float(x[0]),
+                    "time": x[1].strftime("%d-%b %I:%M %p")
+                }
+                for x in trend_rows
+            ]
 
             result.append({
                 "coin": symbol,
@@ -275,6 +287,11 @@ def table():
                 "market_cap": market_cap,
                 "trend": trend
             })
+
+            result.sort(
+                key=lambda x: x["price"],
+                reverse=True
+            )
 
         return jsonify(result)
 

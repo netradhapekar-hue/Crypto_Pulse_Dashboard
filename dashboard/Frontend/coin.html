@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Pulse - Coin Details</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="layout">
+
+    <aside class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li onclick="window.location.href='index.html'">📊 Overview</li>
+            <li>🪙 Assets</li>
+            <li>📈 Trends</li>
+        </ul>
+    </aside>
+
+    <main class="main">
+
+        <button class="back-btn" onclick="window.location.href='index.html'">
+            ← Back to Dashboard
+        </button>
+
+        <section class="coin-hero-card">
+            <div class="coin-hero-left">
+                <img id="coinIcon" class="coin-hero-icon" src="">
+                <div>
+                    <h1 id="coinTitle">Loading...</h1>
+                    <p id="coinSubtitle">Coin performance overview</p>
+                </div>
+            </div>
+
+            <div class="coin-hero-right">
+                <div id="coinPrice" class="coin-hero-price">--</div>
+                <div id="coinChange24h" class="coin-hero-change">--</div>
+            </div>
+        </section>
+
+        <section class="kpi-cards">
+            <div class="kpi-card">
+                <span>Market Cap</span>
+                <div class="kpi-value" id="coinMarketCap">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>Volume</span>
+                <div class="kpi-value" id="coinVolume">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>1H Change</span>
+                <div class="kpi-value" id="coinChange1h">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>24H Change</span>
+                <div class="kpi-value" id="coinChange24hCard">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>7D Change</span>
+                <div class="kpi-value" id="coinChange7d">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>Highest Price</span>
+                <div class="kpi-value" id="coinHigh">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <span>Lowest Price</span>
+                <div class="kpi-value" id="coinLow">--</div>
+            </div>
+        </section>
+
+        <section class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <h2>Price Trend</h2>
+                    <p>Last 20 recorded price movements</p>
+                </div>
+            </div>
+
+            <div class="coin-chart-wrapper">
+                <canvas id="coinChart"></canvas>
+            </div>
+        </section>
+
+        <section class="coin-insights">
+            <div class="insight-card">
+                <h3>Mini Insights</h3>
+                <p id="insightOne">--</p>
+                <p id="insightTwo">--</p>
+                <p id="insightThree">--</p>
+            </div>
+        </section>
+
+        <section class="table-container">
+            <div class="table-header">
+                <h2>Recent Trend Table</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Record</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody id="trendTable"></tbody>
+            </table>
+        </section>
+
+    </main>
+</div>
+
+<script src="coin.js"></script>
+</body>
+</html>

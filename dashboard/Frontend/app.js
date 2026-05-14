@@ -1,15 +1,14 @@
 const API = "https://crypto-pulse-api-dx3x.onrender.com";
+// const API = "http://127.0.0.1:5000";
 
-let mainChart = null;
+let topCryptoChart = null;
 
 // ======================================================
-// 🔥 FETCH HELPER
+// FETCH HELPER
 // ======================================================
 
 async function fetchData(endpoint) {
-
     try {
-
         const res = await fetch(`${API}${endpoint}`);
 
         if (!res.ok) {
@@ -19,30 +18,33 @@ async function fetchData(endpoint) {
         return await res.json();
 
     } catch (err) {
-
         console.error(`❌ Error fetching ${endpoint}:`, err);
-
         return null;
     }
 }
 
 // ======================================================
-// 🔥 FORMAT HELPERS
+// FORMAT HELPERS
 // ======================================================
 
 function formatCurrency(num) {
-
-    if (num === null || num === undefined) {
+    if (num === null || num === undefined || num === "") {
         return "N/A";
     }
 
-    return `$${Number(num).toLocaleString("en-US", {
-        maximumFractionDigits: 2
+    const value = Number(num);
+
+    if (isNaN(value)) {
+        return "N/A";
+    }
+
+    return `$${value.toLocaleString("en-US", {
+        minimumFractionDigits: value < 1 ? 6 : 2,
+        maximumFractionDigits: value < 1 ? 8 : 2
     })}`;
 }
 
 function formatPercent(num) {
-
     if (num === null || num === undefined) {
         return "N/A";
     }
@@ -51,11 +53,10 @@ function formatPercent(num) {
 }
 
 // ======================================================
-// 🔥 LOAD SUMMARY
+// LOAD SUMMARY
 // ======================================================
 
 async function loadSummary() {
-
     const data = await fetchData("/summary");
 
     if (!data) return;
@@ -71,8 +72,9 @@ async function loadSummary() {
 }
 
 // ======================================================
-// 🔥 LOAD TRENDING
+// LOAD TRENDING
 // ======================================================
+
 async function loadTrending() {
     const data = await fetchData("/trending");
 
@@ -80,10 +82,7 @@ async function loadTrending() {
 
     const container = document.getElementById("trendingList");
 
-    if (!container) {
-        console.error("❌ trendingList not found");
-        return;
-    }
+    if (!container) return;
 
     container.innerHTML = "";
 
@@ -92,7 +91,7 @@ async function loadTrending() {
         const color = change >= 0 ? "green" : "red";
         const arrow = change >= 0 ? "▲" : "▼";
 
-        const item = `
+        container.innerHTML += `
             <div class="insight-item">
                 <div class="insight-left">
                     <span class="rank">#${i + 1}</span>
@@ -119,88 +118,85 @@ async function loadTrending() {
                 </div>
             </div>
         `;
-
-        container.innerHTML += item;
     });
 }
 
 // ======================================================
-// 🔥 LOAD TOP GAINERS
+// LOAD TOP GAINERS
 // ======================================================
 
 async function loadGainers() {
-
     const data = await fetchData("/top-gainers");
 
-    if (!data) return;
+    if (!data || !Array.isArray(data)) return;
 
     const container = document.getElementById("gainersList");
 
-    if (!container) {
-        console.error("❌ gainersList not found");
-        return;
-    }
+    if (!container) return;
 
     container.innerHTML = "";
 
     data.forEach((coin, i) => {
+        const change = Number(coin.change ?? 0);
 
-        const change = coin.change ?? 0;
-
-        const item = `
+        container.innerHTML += `
             <div class="insight-item">
-
                 <div class="insight-left">
-
-                    <span class="rank">
-                        #${i + 1}
-                    </span>
+                    <span class="rank">#${i + 1}</span>
 
                     <img 
                         class="coin-icon"
-                        src="${coin.image}"
+                        src="${coin.image || ''}"
                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
                     >
 
                     <div>
-
                         <div class="insight-name">
                             ${coin.coin}
                         </div>
-
                     </div>
-
                 </div>
 
                 <div class="insight-right green">
                     ▲ ${change.toFixed(2)}%
                 </div>
-
             </div>
         `;
-
-        container.innerHTML += item;
     });
 }
 
 // ======================================================
-// 🔥 LOAD TOP ASSETS
+// LOAD TOP ASSETS
 // ======================================================
+const lineGlowPlugin = {
+    id: "lineGlowPlugin",
+    beforeDatasetDraw(chart) {
+        const { ctx } = chart;
+
+        ctx.save();
+        ctx.shadowColor = chart.data.datasets[0].borderColor;
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+    },
+    afterDatasetDraw(chart) {
+        chart.ctx.restore();
+    }
+};
 
 async function loadTopAssets() {
-
     const data = await fetchData("/top-assets");
 
-    if (!data) return;
+    if (!data || !Array.isArray(data)) return;
 
     const container = document.getElementById("topAssets");
 
+    if (!container) return;
+
     container.innerHTML = "";
 
-    data.forEach((coin, index) => {
-
+    data.slice(0, 5).forEach((coin, index) => {
         const first = coin.trend?.[0] || 0;
-
         const last = coin.trend?.at(-1) || 0;
 
         const change =
@@ -215,18 +211,21 @@ async function loadTopAssets() {
 
         const card = document.createElement("div");
 
+        card.style.cursor = "pointer";
+
+        card.onclick = () => {
+            window.location.href = `coin.html?coin=${coin.coin}`;
+        };
+
         card.className = "asset-card";
 
         card.innerHTML = `
-
             <div class="top-card-header">
-
                 <img
                     class="top-card-icon"
-                    src="${coin.image}"
+                    src="${coin.image || ''}"
                     onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
                 >
-
             </div>
 
             <div class="asset-title">
@@ -254,43 +253,43 @@ async function loadTopAssets() {
         container.appendChild(card);
 
         new Chart(document.getElementById(`chart-${index}`), {
-
             type: "line",
+            plugins: [lineGlowPlugin],
 
             data: {
-
                 labels: coin.trend.map((_, i) => i),
 
                 datasets: [{
-
                     data: coin.trend,
 
                     borderColor: color,
 
-                    backgroundColor: `${color}22`,
+                    backgroundColor: `${color}33`,
 
-                    borderWidth: 2,
+                    borderWidth: 4,
 
                     fill: true,
 
                     pointRadius: 0,
 
-                    tension: 0.4
+                    pointHoverRadius: 4,
+
+                    tension: 0.45,
+
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    shadowBlur: 12,
+                    shadowColor: color
                 }]
             },
 
             options: {
-
                 responsive: true,
-
                 maintainAspectRatio: true,
-
                 aspectRatio: 2.5,
-
                 animation: false,
 
                 plugins: {
-
                     legend: {
                         display: false
                     },
@@ -315,21 +314,182 @@ async function loadTopAssets() {
 }
 
 // ======================================================
-// 🔥 LOAD TABLE
+// LOAD TOP 10 BAR CHART
+// ======================================================
+
+async function loadTopCryptoBarChart() {
+    const data = await fetchData("/table");
+
+    if (!data || !Array.isArray(data)) return;
+
+    const top10 = data.slice(0, 10);
+
+    const labels = top10.map(coin => coin.coin);
+
+    const prices = top10.map(coin =>
+        Number(coin.latest_price ?? coin.price)
+    );
+
+    const colors = [
+        "#f7931a",
+        "#3b82f6",
+        "#8b5cf6",
+        "#facc15",
+        "#14b8a6",
+        "#ec4899",
+        "#22c55e",
+        "#38bdf8",
+        "#f43f5e",
+        "#7c3aed"
+    ];
+
+    const ctx = document.getElementById("topCryptoChart");
+
+    if (!ctx) {
+        console.error("❌ topCryptoChart canvas not found");
+        return;
+    }
+
+    if (topCryptoChart) {
+        topCryptoChart.destroy();
+    }
+
+    topCryptoChart = new Chart(ctx, {
+        type: "bar",
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                data: prices,
+                backgroundColor: colors,
+                borderRadius: 8,
+                barThickness: 45
+            }]
+        },
+
+        plugins: [{
+            id: "barValueLabels",
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+
+                chart.data.datasets[0].data.forEach((value, index) => {
+                    const meta = chart.getDatasetMeta(0);
+                    const bar = meta.data[index];
+
+                    ctx.save();
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 13px Inter";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+
+                    ctx.fillText(
+                        formatCurrency(value),
+                        bar.x,
+                        bar.y - 8
+                    );
+
+                    ctx.restore();
+                });
+            }
+        }],
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+
+            layout: {
+                padding: {
+                    top: 30
+                }
+            },
+
+            plugins: {
+                legend: {
+                    display: false
+                },
+
+                tooltip: {
+                    backgroundColor: "#111827",
+                    titleColor: "#fff",
+                    bodyColor: "#fff",
+                    displayColors: false,
+
+                    callbacks: {
+                        label: function(context) {
+                            return `Price: ${formatCurrency(context.raw)}`;
+                        }
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        display: false
+                    },
+
+                    grid: {
+                        display: false
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+
+                    ticks: {
+                        color: "#9ca3af",
+
+                        callback: function(value) {
+                            return "$" + Number(value).toLocaleString("en-US");
+                        }
+                    },
+
+                    grid: {
+                        color: "rgba(255,255,255,0.08)"
+                    }
+                }
+            }
+        }
+    });
+
+        const labelContainer = document.getElementById("cryptoLabels");
+
+    if (!labelContainer) return;
+
+    labelContainer.innerHTML = "";
+
+    top10.forEach(coin => {
+        labelContainer.innerHTML += `
+            <div class="crypto-label-item">
+                <img 
+                    src="${coin.image || ''}" 
+                    onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
+                >
+
+                <div class="crypto-name">
+                    ${coin.name || coin.coin}
+                </div>
+        `;
+    });
+}
+// ======================================================
+// LOAD TABLE
 // ======================================================
 
 async function loadTable() {
-
     const data = await fetchData("/table");
 
-    if (!data) return;
+    if (!data || !Array.isArray(data)) return;
 
     const tbody = document.getElementById("dataTable");
+
+    if (!tbody) return;
 
     tbody.innerHTML = "";
 
     data.forEach((row, index) => {
-
         const change1h = row.change_1h ?? 0;
         const change24h = row.change_24h ?? 0;
         const change7d = row.change_7d ?? 0;
@@ -341,23 +501,19 @@ async function loadTable() {
 
         const tr = `
             <tr>
-
                 <td class="rank">
                     ${index + 1}
                 </td>
 
                 <td>
-
                     <div class="coin-cell">
-
                         <img 
                             class="coin-icon"
-                            src="${row.image}"
+                            src="${row.image || ''}"
                             onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
                         >
 
                         <div class="coin-info">
-
                             <div class="coin-name">
                                 ${row.coin}
                             </div>
@@ -365,15 +521,12 @@ async function loadTable() {
                             <div class="coin-symbol">
                                 ${row.coin}
                             </div>
-
                         </div>
-
                     </div>
-
                 </td>
 
                 <td class="price">
-                    ${formatCurrency(row.price)}
+                    ${formatCurrency(row.latest_price ?? row.price)}
                 </td>
 
                 <td class="${change1h >= 0 ? 'green' : 'red'}">
@@ -397,16 +550,13 @@ async function loadTable() {
                 </td>
 
                 <td>
-
                     <div class="spark-wrapper">
                         <canvas 
                             id="spark-${index}" 
                             class="sparkline">
                         </canvas>
                     </div>
-
                 </td>
-
             </tr>
         `;
 
@@ -425,39 +575,27 @@ async function loadTable() {
         if (!canvas) return;
 
         new Chart(canvas, {
-
             type: "line",
 
             data: {
-
                 labels: sparkData.map((_, i) => i),
 
                 datasets: [{
-
                     data: sparkData,
-
                     borderColor: chartColor,
-
                     borderWidth: 2,
-
                     fill: false,
-
                     pointRadius: 0,
-
                     tension: 0.4
                 }]
             },
 
             options: {
-
                 responsive: true,
-
                 maintainAspectRatio: false,
-
                 animation: false,
 
                 plugins: {
-
                     legend: {
                         display: false
                     },
@@ -482,223 +620,29 @@ async function loadTable() {
 }
 
 // ======================================================
-// 🔥 MAIN CHART
-// ======================================================
-
-async function loadChart(coin = "BTC") {
-
-    // ======================================================
-    // 🔥 FETCH DATA
-    // ======================================================
-
-    const data = await fetchData(`/trend/${coin}`);
-
-    if (!data || !Array.isArray(data) || data.length === 0) {
-        console.warn(`⚠️ No chart data found for ${coin}`);
-        return;
-    }
-
-    // ======================================================
-    // 🔥 FORMAT DATA
-    // ======================================================
-
-    const labels = data.map(r => {
-
-    const d = new Date(r.date);
-
-    const day = String(d.getDate()).padStart(2, "0");
-
-    const month = d.toLocaleString("en-US", {
-        month: "long"
-    });
-
-    const year = d.getFullYear();
-
-    return `${day}-${month}-${year}`;
-    });
-
-    const prices = data.map(r => r.price);
-
-    // ======================================================
-    // 🔥 GET CANVAS
-    // ======================================================
-
-    const ctx = document.getElementById("priceChart");
-
-    if (!ctx) {
-        console.error("❌ priceChart canvas not found");
-        return;
-    }
-
-    // ======================================================
-    // 🔥 DESTROY OLD CHART
-    // ======================================================
-
-    if (mainChart) {
-        mainChart.destroy();
-    }
-
-    // ======================================================
-    // 🔥 CREATE NEW CHART
-    // ======================================================
-
-    mainChart = new Chart(ctx, {
-
-        type: "line",
-
-        data: {
-
-            labels: labels,
-
-            datasets: [{
-
-                label: `${coin} Price`,
-
-                data: prices,
-
-                borderColor: "#16c784",
-
-                backgroundColor: "rgba(22,199,132,0.12)",
-
-                borderWidth: 3,
-
-                fill: true,
-
-                tension: 0.4,
-
-                pointRadius: 0,
-
-                pointHoverRadius: 4
-            }]
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: false,
-
-            animation: false,
-
-            interaction: {
-
-                intersect: false,
-
-                mode: "index"
-            },
-
-            elements: {
-
-                line: {
-                    capBezierPoints: true
-                }
-            },
-
-            plugins: {
-
-                legend: {
-                    display: false
-                },
-
-                tooltip: {
-
-                    enabled: true,
-
-                    backgroundColor: "#111827",
-
-                    borderColor: "rgba(255,255,255,0.08)",
-
-                    borderWidth: 1,
-
-                    titleColor: "#fff",
-
-                    bodyColor: "#fff",
-
-                    displayColors: false,
-
-                    padding: 12,
-
-                    callbacks: {
-
-                        label: function(context) {
-
-                            return `Price: $${Number(context.parsed.y).toLocaleString("en-US", {
-                                maximumFractionDigits: 2
-                            })}`;
-                        }
-                    }
-                }
-            },
-
-            scales: {
-
-                x: {
-
-                    grid: {
-                        display: false
-                    },
-
-                    ticks: {
-                        color: "#9ca3af",
-                        maxTicksLimit: 8
-                    }
-                },
-
-                y: {
-
-                    grid: {
-                        color: "rgba(255,255,255,0.05)"
-                    },
-
-                    ticks: {
-
-                        color: "#9ca3af",
-
-                        callback: function(value) {
-
-                            return "$" + Number(value).toLocaleString("en-US");
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-// ======================================================
-// 🔥 INIT
+// INIT
 // ======================================================
 
 async function initDashboard() {
-
     await loadSummary();
-
     await loadTrending();
-
     await loadGainers();
-
     await loadTopAssets();
-
+    await loadTopCryptoBarChart();
     await loadTable();
-
-    await loadChart("BTC");
 }
 
 initDashboard();
 
 // ======================================================
-// 🔥 AUTO REFRESH
+// AUTO REFRESH
 // ======================================================
 
 setInterval(() => {
-
     loadSummary();
-
     loadTrending();
-
     loadGainers();
-
     loadTopAssets();
-
+    loadTopCryptoBarChart();
     loadTable();
-
 }, 30000);
