@@ -73,12 +73,10 @@ async function loadSummary() {
 // ======================================================
 // 🔥 LOAD TRENDING
 // ======================================================
-
 async function loadTrending() {
-
     const data = await fetchData("/trending");
 
-    if (!data) return;
+    if (!data || !Array.isArray(data)) return;
 
     const container = document.getElementById("trendingList");
 
@@ -90,52 +88,35 @@ async function loadTrending() {
     container.innerHTML = "";
 
     data.forEach((coin, i) => {
-
-        const change = coin.change ?? 0;
-
-        const color =
-            change >= 0
-                ? "green"
-                : "red";
-
-        const arrow =
-            change >= 0
-                ? "▲"
-                : "▼";
+        const change = Number(coin.change ?? coin.change_24h ?? 0);
+        const color = change >= 0 ? "green" : "red";
+        const arrow = change >= 0 ? "▲" : "▼";
 
         const item = `
             <div class="insight-item">
-
                 <div class="insight-left">
-
-                    <span class="rank">
-                        #${i + 1}
-                    </span>
+                    <span class="rank">#${i + 1}</span>
 
                     <img 
                         class="coin-icon"
-                        src="${coin.image}"
+                        src="${coin.image || ''}"
                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
                     >
 
                     <div>
-
                         <div class="insight-name">
-                            ${coin.name}
+                            ${coin.name || coin.coin || coin.symbol || "Unknown"}
                         </div>
 
                         <div class="coin-symbol">
-                            ${coin.symbol}
+                            ${coin.symbol || coin.coin || ""}
                         </div>
-
                     </div>
-
                 </div>
 
                 <div class="insight-right ${color}">
                     ${arrow} ${Math.abs(change).toFixed(2)}%
                 </div>
-
             </div>
         `;
 

@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import psycopg2
 from psycopg2 import Error
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -11,27 +12,36 @@ CORS(app)
 # =========================================================
 
 def get_connection():
+
     try:
+
         return psycopg2.connect(
-            dbname="crypto_pulse",
-            user="postgres",
-            password="postgres",
-            host="localhost",
-            port="5432"
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT", "5432")
         )
+
     except Error as e:
+
         print(f"❌ Database connection failed: {e}")
+
         raise
 
 
+# =========================================================
+# ERROR RESPONSE
+# =========================================================
+
 def error_response(message, error, status_code=500):
+
     print(f"❌ {message}: {error}")
+
     return jsonify({
         "error": message,
         "details": str(error)
     }), status_code
-
-
 # =========================================================
 # HOME ROUTE
 # =========================================================
@@ -103,7 +113,6 @@ def trending():
                 image,
                 (MAX(price) - MIN(price)) / NULLIF(MIN(price),0) * 100 AS change
             FROM crypto_dashboard_clean
-            WHERE fetch_datetime >= NOW() - INTERVAL '1 day'
             GROUP BY symbol, name, image
             ORDER BY change DESC
             LIMIT 5
