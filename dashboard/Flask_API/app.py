@@ -465,6 +465,39 @@ def trend_chart(coin):
         if conn:
             conn.close()
 
+# =========================================================
+@app.route("/ping")
+def ping():
+    return {"status": "working"}
+
+# =========================================================
+@app.route("/test-db")
+def test_db():
+
+    try:
+        conn = get_connection()
+
+        cur = conn.cursor()
+
+        cur.execute("SELECT NOW();")
+
+        result = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        return {
+            "status": "success",
+            "time": str(result[0])
+        }
+
+    except Exception as e:
+
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
 
 # =========================================================
 # RUN SERVER
