@@ -624,6 +624,7 @@ async function loadTable() {
 // ======================================================
 
 async function initDashboard() {
+
     await loadSummary();
     await loadTrending();
     await loadGainers();
