@@ -27,7 +27,9 @@ async function loadCoinDetails() {
     const res = await fetch(`${API}/table`);
     const coins = await res.json();
 
-    const coin = coins.find(c => c.coin === selectedCoinSymbol);
+    const coin = coins.find(c =>
+        c.coin?.toUpperCase() === selectedCoinSymbol?.toUpperCase()
+    );
 
     if (!coin) {
         document.getElementById("coinTitle").innerText = "Coin not found";
@@ -47,7 +49,7 @@ async function loadCoinDetails() {
     document.getElementById("coinTitle").innerText = coin.coin;
     document.getElementById("coinSubtitle").innerText = `${coin.coin} detailed analytics`;
 
-    document.getElementById("coinPrice").innerText = formatCurrency(coin.price);
+    document.getElementById("coinPrice").innerText = formatCurrency(coin.price ?? coin.latest_price);
     document.getElementById("coinChange24h").innerText = formatPercent(coin.change_24h);
 
     document.getElementById("coinMarketCap").innerText = formatCurrency(coin.market_cap);
@@ -67,8 +69,10 @@ async function loadCoinDetails() {
     document.getElementById("insightThree").innerText =
         `Latest price is ${coin.price > low ? "above" : "near"} the recent low of ${formatCurrency(low)}.`;
 
-    loadChart(trend);
-    loadTrendTable(trend);
+const safeTrend = Array.isArray(trend) ? trend : [];
+
+loadChart(safeTrend);
+loadTrendTable(safeTrend);
 }
 
 function loadChart(trend) {
