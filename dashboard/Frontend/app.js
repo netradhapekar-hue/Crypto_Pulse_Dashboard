@@ -640,6 +640,8 @@ async function initDashboard() {
         renderTopAssets(dashboardData.top_assets);
         renderTopCryptoBarChart(dashboardData.table);
         renderTable(dashboardData.table);
+
+        document.getElementById("pageLoader")?.classList.add("hide");
     }
 
     const freshData = await fetchData("/dashboard-data");
@@ -655,6 +657,8 @@ async function initDashboard() {
     renderTopAssets(dashboardData.top_assets);
     renderTopCryptoBarChart(dashboardData.table);
     renderTable(dashboardData.table);
+
+    document.getElementById("pageLoader")?.classList.add("hide");
 }
 
 initDashboard();

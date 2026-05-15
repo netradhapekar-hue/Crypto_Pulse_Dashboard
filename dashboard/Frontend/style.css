@@ -564,7 +564,9 @@ tr:hover {
 .page-loader {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at top, #111827, #050816);
+    background: rgba(5, 8, 22, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
