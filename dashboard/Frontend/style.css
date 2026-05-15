@@ -653,6 +653,7 @@ tr:hover {
 
 .site-footer {
     margin-top: 80px;
+    margin-left: 260px;
     padding: 50px 8%;
     background: #070b14;
     border-top: 1px solid rgba(255,255,255,0.06);
@@ -736,4 +737,10 @@ tr:hover {
     color: #fff !important;
 
     box-shadow: 0 0 18px rgba(22,199,132,0.5);
+}
+
+@media (max-width: 900px) {
+    .site-footer {
+        margin-left: 0;
+    }
 }
