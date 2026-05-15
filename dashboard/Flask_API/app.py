@@ -143,11 +143,45 @@ def dashboard_data():
 
         rows = cur.fetchall()
 
+        symbols = [r[0] for r in rows]
+
+        cur.execute("""
+            SELECT symbol, price
+            FROM (
+                SELECT 
+                    symbol,
+                    price,
+                    fetch_datetime,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY symbol 
+                        ORDER BY fetch_datetime DESC
+                    ) AS rn
+                FROM crypto_dashboard_clean
+                WHERE symbol = ANY(%s)
+                AND price > 0
+            ) t
+            WHERE rn <= 20
+            ORDER BY symbol, fetch_datetime ASC
+        """, (symbols,))
+
+        trend_rows = cur.fetchall()
+
+        trend_map = {}
+
+        for symbol, price in trend_rows:
+            if symbol not in trend_map:
+                trend_map[symbol] = []
+
+            trend_map[symbol].append(float(price or 0))
+
         table = []
 
         for r in rows:
+            symbol = r[0]
+            trend = trend_map.get(symbol, [])
+
             table.append({
-                "coin": r[0],
+                "coin": symbol,
                 "name": r[1],
                 "image": r[2],
                 "price": float(r[3] or 0),
@@ -157,7 +191,7 @@ def dashboard_data():
                 "change_1h": 0,
                 "change_24h": 0,
                 "change_7d": 0,
-                "trend": [float(r[3] or 0)]
+                "trend": trend
             })
 
         table.sort(key=lambda x: x["price"], reverse=True)
