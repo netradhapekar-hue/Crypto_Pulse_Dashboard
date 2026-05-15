@@ -160,13 +160,30 @@ def dashboard_data():
                 WHERE symbol = ANY(%s)
                 AND price > 0
             ) t
-            WHERE rn <= 20
+            WHERE rn <= 50
             ORDER BY symbol, fetch_datetime ASC
         """, (symbols,))
 
         trend_rows = cur.fetchall()
 
         trend_map = {}
+
+        cur.execute("""
+            SELECT DISTINCT ON (symbol)
+                symbol,
+                price
+            FROM crypto_dashboard_clean
+            WHERE symbol = ANY(%s)
+            AND price > 0
+            ORDER BY symbol, fetch_datetime ASC
+        """, (symbols,))
+
+        first_rows = cur.fetchall()
+
+        first_price_map = {
+            symbol: float(price or 0)
+            for symbol, price in first_rows
+        }
 
         for symbol, price in trend_rows:
             if symbol not in trend_map:
@@ -182,7 +199,7 @@ def dashboard_data():
 
             latest_price = float(r[3] or 0)
 
-            first_price = trend[0] if trend else latest_price
+            first_price = first_price_map.get(symbol, latest_price)
             last_price = trend[-1] if trend else latest_price
 
             change_7d = (
