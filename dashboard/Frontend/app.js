@@ -646,3 +646,11 @@ setInterval(() => {
     loadTopCryptoBarChart();
     loadTable();
 }, 30000);
+
+// ======================================================
+//  FRONTEND RELOAD FIX
+// ======================================================
+
+window.addEventListener("pageshow", () => {
+    initDashboard();
+});
