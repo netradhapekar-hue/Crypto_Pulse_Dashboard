@@ -85,7 +85,12 @@ function renderTrending(data) {
     container.innerHTML = "";
 
     data.forEach((coin, i) => {
-        const change = Number(coin.change ?? coin.change_24h ?? 0);
+        const change = Number(
+            coin.change_7d ??
+            coin.change_24h ??
+            coin.change ??
+            0
+        );
         const color = change >= 0 ? "green" : "red";
         const arrow = change >= 0 ? "▲" : "▼";
 
@@ -134,7 +139,12 @@ function renderGainers(data) {
     container.innerHTML = "";
 
     data.forEach((coin, i) => {
-        const change = Number(coin.change ?? 0);
+        const change = Number(
+            coin.change_7d ??
+            coin.change_24h ??
+            coin.change ??
+            0
+        );
 
         container.innerHTML += `
             <div class="insight-item">
