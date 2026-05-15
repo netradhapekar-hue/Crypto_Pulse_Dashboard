@@ -24,12 +24,23 @@ function formatPercent(num) {
 }
 
 async function loadCoinDetails() {
-    const res = await fetch(`${API}/table`);
-    const coins = await res.json();
+    const cacheKey = `coinData_${selectedCoinSymbol}`;
 
-    const coin = coins.find(c =>
-        c.coin?.toUpperCase() === selectedCoinSymbol?.toUpperCase()
-    );
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+        renderCoinDetails(JSON.parse(cachedData));
+    }
+
+    const res = await fetch(`${API}/coin/${selectedCoinSymbol}`);
+    const coin = await res.json();
+
+    localStorage.setItem(cacheKey, JSON.stringify(coin));
+
+    renderCoinDetails(coin);
+}
+
+function renderCoinDetails(coin) {
 
     if (!coin) {
         document.getElementById("coinTitle").innerText = "Coin not found";
