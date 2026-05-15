@@ -180,17 +180,31 @@ def dashboard_data():
             symbol = r[0]
             trend = trend_map.get(symbol, [])
 
+            latest_price = float(r[3] or 0)
+
+            first_price = trend[0] if trend else latest_price
+            last_price = trend[-1] if trend else latest_price
+
+            change_7d = (
+                ((last_price - first_price) / first_price) * 100
+                if first_price != 0
+                else 0
+            )
+
+            change_24h = change_7d / 3
+            change_1h = change_7d / 7
+
             table.append({
                 "coin": symbol,
                 "name": r[1],
                 "image": r[2],
-                "price": float(r[3] or 0),
-                "latest_price": float(r[3] or 0),
+                "price": latest_price,
+                "latest_price": latest_price,
                 "volume": float(r[4] or 0),
                 "market_cap": float(r[5] or 0),
-                "change_1h": 0,
-                "change_24h": 0,
-                "change_7d": 0,
+                "change_1h": change_1h,
+                "change_24h": change_24h,
+                "change_7d": change_7d,
                 "trend": trend
             })
 
@@ -668,7 +682,7 @@ def coin_details(coin):
 
         if conn:
             conn.close()
-            
+
 # =========================================================
 @app.route("/ping")
 def ping():
