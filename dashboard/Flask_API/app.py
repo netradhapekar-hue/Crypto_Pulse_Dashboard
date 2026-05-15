@@ -93,6 +93,91 @@ def summary():
         if conn:
             conn.close()
 
+# =========================================================
+# FAST BACKEND ENDPOINT
+# =========================================================
+@app.route('/dashboard-data')
+def dashboard_data():
+    conn = None
+    cur = None
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        # Summary
+        cur.execute("""
+            SELECT 
+                AVG(price),
+                MAX(price),
+                MIN(price),
+                COUNT(*)
+            FROM crypto_dashboard_clean
+            WHERE price > 0
+        """)
+
+        avg_price, max_price, min_price, total = cur.fetchone()
+
+        summary = {
+            "avg_price": float(avg_price or 0),
+            "max_price": float(max_price or 0),
+            "min_price": float(min_price or 0),
+            "total_records": total
+        }
+
+        # Latest coin data
+        cur.execute("""
+            SELECT DISTINCT ON (symbol)
+                symbol,
+                name,
+                image,
+                price,
+                volume,
+                market_cap,
+                fetch_datetime
+            FROM crypto_dashboard_clean
+            WHERE price > 0
+            ORDER BY symbol, fetch_datetime DESC
+            LIMIT 50
+        """)
+
+        rows = cur.fetchall()
+
+        table = []
+
+        for r in rows:
+            table.append({
+                "coin": r[0],
+                "name": r[1],
+                "image": r[2],
+                "price": float(r[3] or 0),
+                "latest_price": float(r[3] or 0),
+                "volume": float(r[4] or 0),
+                "market_cap": float(r[5] or 0),
+                "change_1h": 0,
+                "change_24h": 0,
+                "change_7d": 0,
+                "trend": [float(r[3] or 0)]
+            })
+
+        table.sort(key=lambda x: x["price"], reverse=True)
+
+        return jsonify({
+            "summary": summary,
+            "table": table,
+            "top_assets": table[:5],
+            "trending": table[:5],
+            "gainers": table[:5]
+        })
+
+    except Exception as e:
+        return error_response("Failed to fetch dashboard data", e)
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # =========================================================
 # TRENDING
