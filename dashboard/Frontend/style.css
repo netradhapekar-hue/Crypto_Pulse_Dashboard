@@ -652,11 +652,27 @@ tr:hover {
 ====================================================== */
 
 .site-footer {
+    position: relative;
+
     margin-top: 80px;
-    margin-left: 260px;
-    padding: 50px 8%;
-    background: #070b14;
+
+    padding: 50px 8% 50px 320px;
+
     border-top: 1px solid rgba(255,255,255,0.06);
+
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background: #070b14;
+
+    z-index: -1;
 }
 
 .footer-top {
