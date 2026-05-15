@@ -84,6 +84,9 @@ const safeTrend = Array.isArray(trend) ? trend : [];
 
 loadChart(safeTrend);
 loadTrendTable(safeTrend);
+
+document.getElementById("pageLoader")?.classList.add("hide");
+
 }
 
 function loadChart(trend) {
