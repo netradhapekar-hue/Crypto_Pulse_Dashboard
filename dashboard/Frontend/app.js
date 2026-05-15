@@ -619,9 +619,25 @@ function renderTable(data) {
 let dashboardData = null;
 
 async function initDashboard() {
-    dashboardData = await fetchData("/dashboard-data");
+    const cachedData = localStorage.getItem("dashboardData");
 
-    if (!dashboardData) return;
+    if (cachedData) {
+        dashboardData = JSON.parse(cachedData);
+
+        renderSummary(dashboardData.summary);
+        renderTrending(dashboardData.trending);
+        renderGainers(dashboardData.gainers);
+        renderTopAssets(dashboardData.top_assets);
+        renderTopCryptoBarChart(dashboardData.table);
+        renderTable(dashboardData.table);
+    }
+
+    const freshData = await fetchData("/dashboard-data");
+
+    if (!freshData) return;
+
+    dashboardData = freshData;
+    localStorage.setItem("dashboardData", JSON.stringify(freshData));
 
     renderSummary(dashboardData.summary);
     renderTrending(dashboardData.trending);
@@ -645,6 +661,19 @@ setInterval(() => {
 //  FRONTEND RELOAD FIX
 // ======================================================
 
-window.addEventListener("pageshow", () => {
-    initDashboard();
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        const cachedData = localStorage.getItem("dashboardData");
+
+        if (cachedData) {
+            dashboardData = JSON.parse(cachedData);
+
+            renderSummary(dashboardData.summary);
+            renderTrending(dashboardData.trending);
+            renderGainers(dashboardData.gainers);
+            renderTopAssets(dashboardData.top_assets);
+            renderTopCryptoBarChart(dashboardData.table);
+            renderTable(dashboardData.table);
+        }
+    }
 });
