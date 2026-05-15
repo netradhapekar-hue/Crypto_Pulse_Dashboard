@@ -585,6 +585,91 @@ def trend_chart(coin):
             conn.close()
 
 # =========================================================
+# SINGLE COIN DETAILS
+# =========================================================
+
+@app.route('/coin/<coin>')
+def coin_details(coin):
+
+    conn = None
+    cur = None
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT 
+                symbol,
+                image,
+                price,
+                volume,
+                market_cap,
+                fetch_datetime
+            FROM crypto_dashboard_clean
+            WHERE symbol = %s
+            ORDER BY fetch_datetime DESC
+            LIMIT 20
+        """, (coin.upper(),))
+
+        rows = cur.fetchall()
+
+        if not rows:
+            return jsonify({
+                "error": "Coin not found"
+            }), 404
+
+        latest = rows[0]
+
+        prices = [float(r[2] or 0) for r in rows][::-1]
+
+        high = max(prices) if prices else 0
+        low = min(prices) if prices else 0
+
+        latest_price = float(latest[2] or 0)
+
+        change_percent = (
+            ((latest_price - low) / low) * 100
+            if low != 0
+            else 0
+        )
+
+        trend = [
+            {
+                "price": float(r[2] or 0),
+                "time": r[5].strftime("%d-%b %I:%M %p")
+            }
+            for r in rows[::-1]
+        ]
+
+        return jsonify({
+            "coin": latest[0],
+            "image": latest[1],
+            "price": latest_price,
+            "volume": float(latest[3] or 0),
+            "market_cap": float(latest[4] or 0),
+
+            "change_1h": change_percent / 7,
+            "change_24h": change_percent / 3,
+            "change_7d": change_percent,
+
+            "trend": trend,
+
+            "high": high,
+            "low": low
+        })
+
+    except Exception as e:
+        return error_response("Failed to fetch coin details", e)
+
+    finally:
+        if cur:
+            cur.close()
+
+        if conn:
+            conn.close()
+            
+# =========================================================
 @app.route("/ping")
 def ping():
     return {"status": "working"}
