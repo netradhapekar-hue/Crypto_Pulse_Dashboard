@@ -56,8 +56,7 @@ function formatPercent(num) {
 // LOAD SUMMARY
 // ======================================================
 
-async function loadSummary() {
-    const data = await fetchData("/summary");
+function renderSummary(data) {
 
     if (!data) return;
 
@@ -75,8 +74,7 @@ async function loadSummary() {
 // LOAD TRENDING
 // ======================================================
 
-async function loadTrending() {
-    const data = await fetchData("/trending");
+function renderTrending(data) {
 
     if (!data || !Array.isArray(data)) return;
 
@@ -125,8 +123,7 @@ async function loadTrending() {
 // LOAD TOP GAINERS
 // ======================================================
 
-async function loadGainers() {
-    const data = await fetchData("/top-gainers");
+function renderGainers(data) {
 
     if (!data || !Array.isArray(data)) return;
 
@@ -184,9 +181,7 @@ const lineGlowPlugin = {
     }
 };
 
-async function loadTopAssets() {
-    const data = await fetchData("/top-assets");
-
+function renderTopAssets(data) {
     if (!data || !Array.isArray(data)) return;
 
     const container = document.getElementById("topAssets");
@@ -317,8 +312,7 @@ async function loadTopAssets() {
 // LOAD TOP 10 BAR CHART
 // ======================================================
 
-async function loadTopCryptoBarChart() {
-    const data = await fetchData("/table");
+function renderTopCryptoBarChart(data) {
 
     if (!data || !Array.isArray(data)) return;
 
@@ -478,8 +472,7 @@ async function loadTopCryptoBarChart() {
 // LOAD TABLE
 // ======================================================
 
-async function loadTable() {
-    const data = await fetchData("/table");
+function renderTable(data) {
 
     if (!data || !Array.isArray(data)) return;
 
@@ -623,14 +616,19 @@ async function loadTable() {
 // INIT
 // ======================================================
 
-async function initDashboard() {
+let dashboardData = null;
 
-    await loadSummary();
-    await loadTrending();
-    await loadGainers();
-    await loadTopAssets();
-    await loadTopCryptoBarChart();
-    await loadTable();
+async function initDashboard() {
+    dashboardData = await fetchData("/dashboard-data");
+
+    if (!dashboardData) return;
+
+    renderSummary(dashboardData.summary);
+    renderTrending(dashboardData.trending);
+    renderGainers(dashboardData.gainers);
+    renderTopAssets(dashboardData.top_assets);
+    renderTopCryptoBarChart(dashboardData.table);
+    renderTable(dashboardData.table);
 }
 
 initDashboard();
@@ -640,13 +638,8 @@ initDashboard();
 // ======================================================
 
 setInterval(() => {
-    loadSummary();
-    loadTrending();
-    loadGainers();
-    loadTopAssets();
-    loadTopCryptoBarChart();
-    loadTable();
-}, 30000);
+    initDashboard();
+}, 60000);
 
 // ======================================================
 //  FRONTEND RELOAD FIX
